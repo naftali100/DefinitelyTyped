@@ -43,7 +43,9 @@ declare namespace TelegramBot {
         | "contact"
         | "delete_chat_photo"
         | "document"
+        | "dice"
         | "game"
+        | "poll"
         | "group_chat_created"
         | "invoice"
         | "left_chat_member"
@@ -67,8 +69,6 @@ declare namespace TelegramBot {
         | "video_chat_participants_invited"
         | "video_chat_scheduled"
         | "message_auto_delete_timer_changed"
-        | "chat_invite_link"
-        | "chat_member_updated"
         | "web_app_data";
 
     type MessageEntityType =
@@ -458,6 +458,8 @@ declare namespace TelegramBot {
         edited_message?: Message | undefined;
         channel_post?: Message | undefined;
         edited_channel_post?: Message | undefined;
+        message_reaction?: MessageReactionUpdated | undefined;
+        message_reaction_count?: MessageReactionCountUpdated | undefined;
         inline_query?: InlineQuery | undefined;
         chosen_inline_result?: ChosenInlineResult | undefined;
         callback_query?: CallbackQuery | undefined;
@@ -501,6 +503,7 @@ declare namespace TelegramBot {
         is_forum?: boolean | undefined;
         photo?: ChatPhoto | undefined;
         active_usernames?: string[] | undefined;
+        available_reactions: ReactionType[] | undefined;
         emoji_status_custom_emoji_id?: string | undefined;
         bio?: string | undefined;
         has_restricted_voice_and_video_messages?: boolean | undefined;
@@ -590,6 +593,11 @@ declare namespace TelegramBot {
         has_media_spoiler?: boolean | undefined;
         user_shared?: UserShared | undefined;
         chat_shared?: ChatShared | undefined;
+        video_chat_scheduled?: VideoChatScheduled | undefined;
+        video_chat_started?: VideoChatStarted | undefined;
+        video_chat_ended?: VideoChatEnded | undefined;
+        video_chat_participants_invited?: VideoChatParticipantsInvited | undefined;
+        message_auto_delete_timer_changed?: MessageAutoDeleteTimerChanged | undefined;
     }
 
     interface MessageEntity {
@@ -644,7 +652,6 @@ declare namespace TelegramBot {
         media: string;
         has_spoiler?: boolean | undefined;
         caption?: string | undefined;
-        caption_entities?: MessageEntity[] | undefined;
         parse_mode?: ParseMode | undefined;
     }
 
@@ -1472,7 +1479,60 @@ declare namespace TelegramBot {
         webhook_error: (error: Error) => any;
         chat_join_request: (query: ChatJoinRequest) => any;
     }
+
+    interface ReactionTypeEmoji {
+        type: 'emoji';
+        emoji: "👍" | "👎" | "❤" | "🔥" | "🥰" | "👏" | "😁" | "🤔" | "🤯" | "😱" | "🤬" | "😢" | "🎉" | "🤩" | "🤮" | "💩" | "🙏" | "👌" | "🕊" | "🤡" | "🥱" | "🥴" | "😍" | "🐳" | "❤‍🔥" | "🌚" | "🌭" | "💯" | "🤣" | "⚡" | "🍌" | "🏆" | "💔" | "🤨" | "😐" | "🍓" | "🍾" | "💋" | "🖕" | "😈" | "😴" | "😭" | "🤓" | "👻" | "👨‍💻" | "👀" | "🎃" | "🙈" | "😇" | "😨" | "🤝" | "✍" | "🤗" | "🫡" | "🎅" | "🎄" | "☃" | "💅" | "🤪" | "🗿" | "🆒" | "💘" | "🙉" | "🦄" | "😘" | "💊" | "🙊" | "😎" | "👾" | "🤷‍♂" | "🤷" | "🤷‍♀" | "😡"
+    }
+
+    interface ReactionTypeCustomEmoji {
+        type: 'custom_emoji';
+        emoji: string
+    }
+
+    type ReactionType = ReactionTypeEmoji | ReactionTypeCustomEmoji;
+
+    interface ReactionCount {
+        type: ReactionType;
+        total_count: number;
+    }
+
+    interface MessageReactionUpdated {
+        chat: Chat;
+        message_id: number;
+        user: User | undefined;
+        actor_chat: Chat | undefined;
+        date: number;
+        old_reaction: ReactionType[];
+        new_reaction: ReactionType[];
+    }
+
+    interface MessageReactionCountUpdated {
+        chat: Chat;
+        message_id: number;
+        date: number;
+        reactions: ReactionCount[];
+    }
+
+    interface VideoChatScheduled {
+        start_date: number;
+    }
+
+    interface VideoChatStarted {}
+
+    interface VideoChatEnded {
+        duration: number;
+    }
+
+    interface VideoChatParticipantsInvited {
+        users: User[]
+    }
+
+    interface MessageAutoDeleteTimerChanged {
+        message_auto_delete_time: number;
+    }
 }
+
 
 declare class TelegramBotEventEmitter<E extends Record<string, any>> {
     on<K extends Exclude<keyof E, number>>(event: K, listener: E[K]): TelegramBotEventEmitter<E>;
